@@ -11,6 +11,16 @@ ROOT = path.dirname(path.abspath(gym.__file__))+"/envs/env_approx/"
 from tensorflow.keras import backend as K
 
 
+
+import tensorflow as tf
+from tensorflow.keras.models import load_model
+from tensorflow.keras import Model
+
+import CoRec
+ROOT = path.dirname(path.abspath(CoRec.__file__))+"/envs/gym_approx/"
+from tensorflow.keras import backend as K
+
+
 class PendulumEnv(gym.Env):
     metadata = {
         'render.modes' : ['human', 'rgb_array'],
