@@ -1,4 +1,5 @@
 """classic Acrobot task"""
+import gym
 from gym import core, spaces
 from gym.utils import seeding
 import numpy as np
@@ -9,6 +10,13 @@ __credits__ = ["Alborz Geramifard", "Robert H. Klein", "Christoph Dann",
                "William Dabney", "Jonathan P. How"]
 __license__ = "BSD 3-Clause"
 __author__ = "Christoph Dann <cdann@cdann.de>"
+
+from os import path
+import tensorflow as tf
+from tensorflow.keras.models import load_model
+
+ROOT = path.dirname(path.abspath(gym.__file__))+"/envs/env_approx/"
+from tensorflow.keras import backend as K
 
 # SOURCE:
 # https://github.com/rlpy/rlpy/blob/master/rlpy/Domains/Acrobot.py
@@ -89,15 +97,38 @@ class AcrobotEnv(core.Env):
         self.observation_space = spaces.Box(low=low, high=high)
         self.action_space = spaces.Discrete(3)
         self.state = None
+        init_high = np.array([0.1, 0.1, 0.1, 0.1])
+        self.initial_space = spaces.Box(low=-init_high, high=init_high, dtype=np.float32)
+
         self.seed()
 
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
-    def reset(self):
-        self.state = self.np_random.uniform(low=-0.1, high=0.1, size=(4,))
+    def reset(self, x0=None):
+        if x0 is None:
+            self.state = self.np_random.uniform(low=-0.1, high=0.1, size=(4,))
+        else:
+            self.state = x0
         return self._get_ob()
+
+    def approximator(self, x0, step, algo, reward_approx=True):
+        model_name = "Acrobot-v1"
+        if reward_approx:
+            self.approx = load_model(ROOT+model_name+"/"+algo+"_ra_approx_1e+03_approx"+str(step)+".model")
+        else:
+            assert False
+
+        new_model = tf.keras.Sequential()
+        new_input = tf.keras.Input(tensor=tf.reshape(x0, (-1, len(self.state))))
+        new_model.add(new_input)
+        for layer in self.approx.layers:
+            new_model.add(layer)
+
+        sess = K.get_session()
+
+        return tf.reshape(new_model.output, (-1, 1)), sess
 
     def step(self, a):
         s = self.state
@@ -126,7 +157,7 @@ class AcrobotEnv(core.Env):
         ns[3] = bound(ns[3], -self.MAX_VEL_2, self.MAX_VEL_2)
         self.state = ns
         terminal = self._terminal()
-        reward = -1. if not terminal else 0.
+        reward = -1./999 if not terminal else 0.
         return (self._get_ob(), reward, terminal, {})
 
     def _get_ob(self):

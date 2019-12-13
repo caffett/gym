@@ -10,6 +10,13 @@ from gym import spaces, logger
 from gym.utils import seeding
 import numpy as np
 
+from os import path
+import tensorflow as tf
+from tensorflow.keras.models import load_model
+
+ROOT = path.dirname(path.abspath(gym.__file__))+"/envs/env_approx/"
+from tensorflow.keras import backend as K
+
 class CartPoleEnv(gym.Env):
     """
     Description:
@@ -78,11 +85,18 @@ class CartPoleEnv(gym.Env):
         self.action_space = spaces.Discrete(2)
         self.observation_space = spaces.Box(-high, high, dtype=np.float32)
 
+        init_high = np.array([0.05, 0.05, 0.05, 0.05])
+        self.initial_space = spaces.Box(low=-init_high, high=init_high, dtype=np.float32)
+
         self.seed()
         self.viewer = None
         self.state = None
 
         self.steps_beyond_done = None
+
+        self.rewards_dir = {
+            "safety_reward": 0.0
+        }
 
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
@@ -116,23 +130,56 @@ class CartPoleEnv(gym.Env):
         done = bool(done)
 
         if not done:
-            reward = 1.0
+            reward = 1.0/500
+            self.rewards_dir["safety_reward"] = -(abs(x/self.x_threshold) + abs(theta/self.theta_threshold_radians))
         elif self.steps_beyond_done is None:
             # Pole just fell!
             self.steps_beyond_done = 0
-            reward = 1.0
+            reward = 1.0/500
+            self.rewards_dir["safety_reward"] = -(abs(x/self.x_threshold) + abs(theta/self.theta_threshold_radians))
         else:
-            if self.steps_beyond_done == 0:
-                logger.warn("You are calling 'step()' even though this environment has already returned done = True. You should always call 'reset()' once you receive 'done = True' -- any further steps are undefined behavior.")
+            # if self.steps_beyond_done == 0:
+            #     logger.warn("You are calling 'step()' even though this environment has already returned done = True. You should always call 'reset()' once you receive 'done = True' -- any further steps are undefined behavior.")
             self.steps_beyond_done += 1
             reward = 0.0
+            self.rewards_dir["safety_reward"] = -np.inf
 
         return np.array(self.state), reward, done, {}
 
-    def reset(self):
-        self.state = self.np_random.uniform(low=-0.05, high=0.05, size=(4,))
+    def reset(self, x0=None):
+        if x0 is None:
+            self.state = self.np_random.uniform(low=-0.05, high=0.05, size=(4,))
+        else:
+            self.state = x0
         self.steps_beyond_done = None
         return np.array(self.state)
+
+    def check_safe(self, state):
+        x, x_dot, theta, theta_dot = state
+        unsafe =  x < -self.x_threshold \
+        or x > self.x_threshold \
+        or theta < -self.theta_threshold_radians \
+        or theta > self.theta_threshold_radians
+
+        return (not unsafe)
+
+
+    def approximator(self, x0, step, algo, reward_approx=True):
+        model_name = "CartPole-v1"
+        if reward_approx:
+            self.approx = load_model(ROOT+model_name+"/"+algo+"_ra_approx_1e+03_approx"+str(step)+".model")
+        else:
+            assert False
+
+        new_model = tf.keras.Sequential()
+        new_input = tf.keras.Input(tensor=tf.reshape(x0, (-1, len(self.state))))
+        new_model.add(new_input)
+        for layer in self.approx.layers:
+            new_model.add(layer)
+
+        sess = K.get_session()
+
+        return tf.reshape(new_model.output, (-1, 1)), sess
 
     def render(self, mode='human'):
         screen_width = 600

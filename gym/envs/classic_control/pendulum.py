@@ -2,7 +2,14 @@ import gym
 from gym import spaces
 from gym.utils import seeding
 import numpy as np
+
 from os import path
+import tensorflow as tf
+from tensorflow.keras.models import load_model
+
+ROOT = path.dirname(path.abspath(gym.__file__))+"/envs/env_approx/"
+from tensorflow.keras import backend as K
+
 
 class PendulumEnv(gym.Env):
     metadata = {
@@ -14,13 +21,16 @@ class PendulumEnv(gym.Env):
         self.max_speed=8
         self.max_torque=2.
         self.dt=.05
+        self.original = np.array([0.0, 0.0])
         self.viewer = None
 
         high = np.array([1., 1., self.max_speed])
         self.action_space = spaces.Box(low=-self.max_torque, high=self.max_torque, shape=(1,), dtype=np.float32)
         self.observation_space = spaces.Box(low=-high, high=high, dtype=np.float32)
+        init_high = np.array([np.pi, 1])
+        self.initial_space = spaces.Box(low=-init_high, high=init_high, dtype=np.float32)
 
-        self.seed()
+        # self.seed()
 
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
@@ -36,27 +46,59 @@ class PendulumEnv(gym.Env):
 
         u = np.clip(u, -self.max_torque, self.max_torque)[0]
         self.last_u = u # for rendering
-        costs = angle_normalize(th)**2 + .1*thdot**2 + .001*(u**2)
+        costs = (angle_normalize(th)**2 + .1*thdot**2 + .001*(u**2))/1000
 
         newthdot = thdot + (-3*g/(2*l) * np.sin(th + np.pi) + 3./(m*l**2)*u) * dt
         newth = th + newthdot*dt
         newthdot = np.clip(newthdot, -self.max_speed, self.max_speed) #pylint: disable=E1111
 
         self.state = np.array([newth, newthdot])
+
+        # if not self.check_safe(self.state):
+        #     return self._get_obs(), -1.0, True, {}
         return self._get_obs(), -costs, False, {}
 
-    def reset(self):
+    def reset(self, x0=None):
+        self.seed()
         high = np.array([np.pi, 1])
-        self.state = self.np_random.uniform(low=-high, high=high)
+        if x0 is None:
+            self.state = self.np_random.uniform(low=-high, high=high)
+        else:
+            self.state = x0
         self.last_u = None
         return self._get_obs()
+
+    # def check_safe(self, state):
+    #     # safe constriants
+    #     # return state[1] > -1.5 and state[1] < 1.5
+    #     return True
+
+    def approximator(self, x0, step, algo, reward_approx=False):
+        model_name = "Pendulum-v0"
+        if reward_approx:
+            self.approx = load_model(ROOT+model_name+"/"+algo+"_ra_approx_1e+03_approx"+str(step)+".model")
+        else:
+            if step == 200:
+                self.approx = load_model(ROOT+model_name+"/"+algo+"_nn_approx_1e+06_approx200.model")
+            else:
+                assert False
+                # print(approx.summary())
+
+        new_model = tf.keras.Sequential()
+        new_input = tf.keras.Input(tensor=tf.reshape(x0, (-1,2)))
+        new_model.add(new_input)
+        for layer in self.approx.layers:
+            new_model.add(layer)
+
+        sess = K.get_session()
+
+        return tf.reshape(new_model.output, (-1, 1)), sess
 
     def _get_obs(self):
         theta, thetadot = self.state
         return np.array([np.cos(theta), np.sin(theta), thetadot])
 
     def render(self, mode='human'):
-
         if self.viewer is None:
             from gym.envs.classic_control import rendering
             self.viewer = rendering.Viewer(500,500)

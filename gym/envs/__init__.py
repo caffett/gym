@@ -7,14 +7,14 @@ register(
     id='Copy-v0',
     entry_point='gym.envs.algorithmic:CopyEnv',
     max_episode_steps=200,
-    reward_threshold=25.0,
+    #reward_threshold=25.0,
 )
 
 register(
     id='RepeatCopy-v0',
     entry_point='gym.envs.algorithmic:RepeatCopyEnv',
     max_episode_steps=200,
-    reward_threshold=75.0,
+    #reward_threshold=75.0,
 )
 
 register(
@@ -22,7 +22,7 @@ register(
     entry_point='gym.envs.algorithmic:ReversedAdditionEnv',
     kwargs={'rows' : 2},
     max_episode_steps=200,
-    reward_threshold=25.0,
+    #reward_threshold=25.0,
 )
 
 register(
@@ -30,21 +30,21 @@ register(
     entry_point='gym.envs.algorithmic:ReversedAdditionEnv',
     kwargs={'rows' : 3},
     max_episode_steps=200,
-    reward_threshold=25.0,
+    #reward_threshold=25.0,
 )
 
 register(
     id='DuplicatedInput-v0',
     entry_point='gym.envs.algorithmic:DuplicatedInputEnv',
     max_episode_steps=200,
-    reward_threshold=9.0,
+    #reward_threshold=9.0,
 )
 
 register(
     id='Reverse-v0',
     entry_point='gym.envs.algorithmic:ReverseEnv',
     max_episode_steps=200,
-    reward_threshold=25.0,
+    #reward_threshold=25.0,
 )
 
 # Classic
@@ -54,28 +54,28 @@ register(
     id='CartPole-v0',
     entry_point='gym.envs.classic_control:CartPoleEnv',
     max_episode_steps=200,
-    reward_threshold=195.0,
+    #reward_threshold=195.0,
 )
 
 register(
     id='CartPole-v1',
     entry_point='gym.envs.classic_control:CartPoleEnv',
     max_episode_steps=500,
-    reward_threshold=475.0,
+    #reward_threshold=475.0,
 )
 
 register(
     id='MountainCar-v0',
     entry_point='gym.envs.classic_control:MountainCarEnv',
     max_episode_steps=200,
-    reward_threshold=-110.0,
+    #reward_threshold=-110.0,
 )
 
 register(
     id='MountainCarContinuous-v0',
     entry_point='gym.envs.classic_control:Continuous_MountainCarEnv',
     max_episode_steps=999,
-    reward_threshold=90.0,
+    #reward_threshold=90.0,
 )
 
 register(
@@ -97,35 +97,35 @@ register(
     id='LunarLander-v2',
     entry_point='gym.envs.box2d:LunarLander',
     max_episode_steps=1000,
-    reward_threshold=200,
+    #reward_threshold=200,
 )
 
 register(
     id='LunarLanderContinuous-v2',
     entry_point='gym.envs.box2d:LunarLanderContinuous',
     max_episode_steps=1000,
-    reward_threshold=200,
+    #reward_threshold=200,
 )
 
 register(
     id='BipedalWalker-v2',
     entry_point='gym.envs.box2d:BipedalWalker',
     max_episode_steps=1600,
-    reward_threshold=300,
+    #reward_threshold=300,
 )
 
 register(
     id='BipedalWalkerHardcore-v2',
     entry_point='gym.envs.box2d:BipedalWalkerHardcore',
     max_episode_steps=2000,
-    reward_threshold=300,
+    #reward_threshold=300,
 )
 
 register(
     id='CarRacing-v0',
     entry_point='gym.envs.box2d:CarRacing',
     max_episode_steps=1000,
-    reward_threshold=900,
+    #reward_threshold=900,
 )
 
 # Toy Text
@@ -139,7 +139,7 @@ register(
 register(
     id='KellyCoinflip-v0',
     entry_point='gym.envs.toy_text:KellyCoinflipEnv',
-    reward_threshold=246.61,
+    #reward_threshold=246.61,
 )
 register(
     id='KellyCoinflipGeneralized-v0',
@@ -151,7 +151,7 @@ register(
     entry_point='gym.envs.toy_text:FrozenLakeEnv',
     kwargs={'map_name' : '4x4'},
     max_episode_steps=100,
-    reward_threshold=0.78, # optimum = .8196
+    #reward_threshold=0.78, # optimum = .8196
 )
 
 register(
@@ -159,7 +159,7 @@ register(
     entry_point='gym.envs.toy_text:FrozenLakeEnv',
     kwargs={'map_name' : '8x8'},
     max_episode_steps=200,
-    reward_threshold=0.99, # optimum = 1
+    #reward_threshold=0.99, # optimum = 1
 )
 
 register(
@@ -182,7 +182,7 @@ register(
 register(
     id='Taxi-v2',
     entry_point='gym.envs.toy_text.taxi:TaxiEnv',
-    reward_threshold=8, # optimum = 8.46
+    #reward_threshold=8, # optimum = 8.46
     max_episode_steps=200,
 )
 
@@ -207,63 +207,63 @@ register(
     id='Reacher-v2',
     entry_point='gym.envs.mujoco:ReacherEnv',
     max_episode_steps=50,
-    reward_threshold=-3.75,
+    #reward_threshold=-3.75,
 )
 
 register(
     id='Pusher-v2',
     entry_point='gym.envs.mujoco:PusherEnv',
     max_episode_steps=100,
-    reward_threshold=0.0,
+    #reward_threshold=0.0,
 )
 
 register(
     id='Thrower-v2',
     entry_point='gym.envs.mujoco:ThrowerEnv',
     max_episode_steps=100,
-    reward_threshold=0.0,
+    #reward_threshold=0.0,
 )
 
 register(
     id='Striker-v2',
     entry_point='gym.envs.mujoco:StrikerEnv',
     max_episode_steps=100,
-    reward_threshold=0.0,
+    #reward_threshold=0.0,
 )
 
 register(
     id='InvertedPendulum-v2',
     entry_point='gym.envs.mujoco:InvertedPendulumEnv',
     max_episode_steps=1000,
-    reward_threshold=950.0,
+    #reward_threshold=950.0,
 )
 
 register(
     id='InvertedDoublePendulum-v2',
     entry_point='gym.envs.mujoco:InvertedDoublePendulumEnv',
     max_episode_steps=1000,
-    reward_threshold=9100.0,
+    #reward_threshold=9100.0,
 )
 
 register(
     id='HalfCheetah-v2',
     entry_point='gym.envs.mujoco:HalfCheetahEnv',
     max_episode_steps=1000,
-    reward_threshold=4800.0,
+    #reward_threshold=4800.0,
 )
 
 register(
     id='Hopper-v2',
     entry_point='gym.envs.mujoco:HopperEnv',
     max_episode_steps=1000,
-    reward_threshold=3800.0,
+    #reward_threshold=3800.0,
 )
 
 register(
     id='Swimmer-v2',
     entry_point='gym.envs.mujoco:SwimmerEnv',
     max_episode_steps=1000,
-    reward_threshold=360.0,
+    #reward_threshold=360.0,
 )
 
 register(
@@ -276,7 +276,7 @@ register(
     id='Ant-v2',
     entry_point='gym.envs.mujoco:AntEnv',
     max_episode_steps=1000,
-    reward_threshold=6000.0,
+    #reward_threshold=6000.0,
 )
 
 register(
@@ -512,22 +512,22 @@ for game in ['air_raid', 'alien', 'amidar', 'assault', 'asterix', 'asteroids', '
 register(
     id='CubeCrash-v0',
     entry_point='gym.envs.unittest:CubeCrash',
-    reward_threshold=0.9,
+    #reward_threshold=0.9,
     )
 register(
     id='CubeCrashSparse-v0',
     entry_point='gym.envs.unittest:CubeCrashSparse',
-    reward_threshold=0.9,
+    #reward_threshold=0.9,
     )
 register(
     id='CubeCrashScreenBecomesBlack-v0',
     entry_point='gym.envs.unittest:CubeCrashScreenBecomesBlack',
-    reward_threshold=0.9,
+    #reward_threshold=0.9,
     )
 
 register(
     id='MemorizeDigits-v0',
     entry_point='gym.envs.unittest:MemorizeDigits',
-    reward_threshold=20,
+    #reward_threshold=20,
     )
 

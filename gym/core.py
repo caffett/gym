@@ -61,7 +61,7 @@ class Env(object):
         """
         raise NotImplementedError
 
-    def reset(self):
+    def reset(self, **kwargs):
         """Resets the state of the environment and returns an initial observation.
 
         Returns: observation (object): the initial observation of the
@@ -160,11 +160,11 @@ class GoalEnv(Env):
     actual observations of the environment as per usual.
     """
 
-    def reset(self):
+    def reset(self, **kwargs):
         # Enforce that each GoalEnv uses a Goal-compatible observation space.
         if not isinstance(self.observation_space, gym.spaces.Dict):
             raise error.Error('GoalEnv requires an observation space of type gym.spaces.Dict')
-        result = super(GoalEnv, self).reset()
+        result = super(GoalEnv, self).reset(**kwargs)
         for key in ['observation', 'achieved_goal', 'desired_goal']:
             if key not in result:
                 raise error.Error('GoalEnv requires the "{}" key to be part of the observation dictionary.'.format(key))
@@ -314,8 +314,8 @@ class ObservationWrapper(Wrapper):
 
 
 class RewardWrapper(Wrapper):
-    def reset(self):
-        return self.env.reset()
+    def reset(self, **kwargs):
+        return self.env.reset(**kwargs)
 
     def step(self, action):
         observation, reward, done, info = self.env.step(action)
@@ -331,8 +331,8 @@ class ActionWrapper(Wrapper):
         action = self.action(action)
         return self.env.step(action)
 
-    def reset(self):
-        return self.env.reset()
+    def reset(self, **kwargs):
+        return self.env.reset(**kwargs)
 
     def action(self, action):
         deprecated_warn_once("%s doesn't implement 'action' method. Maybe it implements deprecated '_action' method." % type(self))

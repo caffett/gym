@@ -9,6 +9,13 @@ from gym import spaces
 from gym.utils import seeding
 import numpy as np
 
+from os import path
+import tensorflow as tf
+from tensorflow.keras.models import load_model
+
+ROOT = path.dirname(path.abspath(gym.__file__))+"/envs/env_approx/"
+from tensorflow.keras import backend as K
+
 class MountainCarEnv(gym.Env):
     metadata = {
         'render.modes': ['human', 'rgb_array'],
@@ -29,6 +36,8 @@ class MountainCarEnv(gym.Env):
         self.action_space = spaces.Discrete(3)
         self.observation_space = spaces.Box(self.low, self.high)
 
+        self.initial_space = spaces.Box(low=np.array([-0.6, 0]), high=np.array([-0.4, 0]), dtype=np.float32)
+
         self.seed()
         self.reset()
 
@@ -47,14 +56,36 @@ class MountainCarEnv(gym.Env):
         if (position==self.min_position and velocity<0): velocity = 0
 
         done = bool(position >= self.goal_position)
-        reward = -1.0
+        reward = -1.0/200
 
         self.state = (position, velocity)
         return np.array(self.state), reward, done, {}
 
-    def reset(self):
-        self.state = np.array([self.np_random.uniform(low=-0.6, high=-0.4), 0])
+    def reset(self, x0=None):
+        if x0 is None:
+            self.state = np.array([self.np_random.uniform(low=-0.6, high=-0.4), 0])
+        else:
+            self.state = x0
+
         return np.array(self.state)
+
+    def approximator(self, x0, step, algo, reward_approx=True):
+        model_name = "MountainCar-v0"
+        if reward_approx:
+            self.approx = load_model(ROOT+model_name+"/"+algo+"_ra_approx_1e+03_approx"+str(step)+".model")
+        else:
+            assert False
+
+        new_model = tf.keras.Sequential()
+        new_input = tf.keras.Input(tensor=tf.reshape(x0, (-1, len(self.state))))
+        new_model.add(new_input)
+        for layer in self.approx.layers:
+            new_model.add(layer)
+
+        sess = K.get_session()
+
+        return tf.reshape(new_model.output, (-1, 1)), sess
+
 
     def _height(self, xs):
         return np.sin(3 * xs)*.45+.55
